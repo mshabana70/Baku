@@ -363,7 +363,8 @@ tests/  unit/  integration/  fixtures/{mock_target.py, tiny model}
 - **A new probe backend** → implement `ProbeBackend` (capture/steer/generate/resolve_site) + a `Convention`; register it.
   The rest of the system is unchanged because everything speaks logical `Site`s.
 - **A new target family** → implement `ModelAdapter` (template, positions, sites, `R`, orthogonalization matrices,
-  `attn_implementation`) and register it in `adapters/registry.py` keyed on `config.model_type`.
+  `attn_implementation`) and register it in `adapters/registry.py` keyed on **`config.model.family`** (a stable family tag,
+  e.g. `"gemma2"` / `"gpt2"` — *not* the raw HF id `config.model.name`, since every snapshot/variant is a distinct string).
 - **A new fitness signal** → implement the `FitnessFn` protocol (return scalar + raw activations, set `is_differentiable`).
   Slots straight into any `SearchStrategy`. This is how `SAEFeatureFitness` / `LinearProbeFitness` arrive later.
 - **A new attack/search** → implement `SearchStrategy`. GA→QD is *not* a new attack — it's swapping the `Selector` +
