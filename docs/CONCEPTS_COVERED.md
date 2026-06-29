@@ -16,6 +16,28 @@ When a concept is first taught with full reference **and** the researcher implem
 **REPEAT** and set "First built". Add new rows as concepts appear. Keep it honest — a concept only mentioned in a design doc
 but not yet built is still **NEW** for its build piece.
 
+## Spaced active recall (standing protocol)
+After each piece, when the mentor offers understanding-check questions:
+- Ask **mostly about the current piece**, but **mix in 1–2 questions on already-built concepts** (dial = REPEAT, i.e.
+  implemented + reviewed) **selected from THIS ledger, not from memory** — so it keeps working in fresh sessions.
+- **Space them:** prefer the *least-recently-recalled* completed concepts (see the Recall log) so older concepts resurface
+  at intervals.
+- **Make questions applied, not definitional** — force connections across concepts
+  (e.g. *"Piece 5's fitness does one truncated forward; why would caching all layers there reintroduce the Piece 0 OOM
+  problem?"*), never isolated recitation (*"what does `names_filter` do?"*).
+- **On a fumble:** bump that concept's "Dial (next time)" back toward **full-reference**, and log it. A fumble is the signal
+  it needs another full pass.
+- **Log every recall** below so spacing persists across sessions.
+
+### Recall log
+| Date | Concept recalled | At piece | Result (solid / fumbled) | Action taken |
+|---|---|---|---|---|
+| — | _(first spaced recall begins at Piece 1's review; Piece 0 has no prior completed concepts)_ | — | — | — |
+
+### Per-piece dial overrides (researcher's call, stands until changed)
+- **Pieces 2, 5, 8 → attempt COLD (interface + hints)**, even where the default marks them NEW→full. The researcher chose
+  these conceptually-harder pieces for cold attempts to push retention. (Piece 5 was already REPEAT.)
+
 | Concept | First introduced | First built | Dial (next time) | Notes |
 |---|---|---|---|---|
 | Config-driven device/dtype/tier (no hardcoding) | Piece 0 (this session) | — | NEW → REPEAT after review | tier switch = config only, never branch in algo code |
@@ -23,7 +45,7 @@ but not yet built is still **NEW** for its build piece.
 | Memory discipline (detach→CPU, truncated forward, no cache-all) | Piece 0 (this session) | — | NEW → REPEAT after review | the 16GB-tier survival rule |
 | Raw-activation convention / `from_pretrained_no_processing` | ARCHITECTURE §5 (this session) | — | NEW for first SAE/extraction use | the silent-corruption trap; convention-tag artifacts |
 | Chat templates + post-instruction positions (negative-indexed) | Piece 1 | — | NEW | synthetic template for no-template base models |
-| Family registry / `ModelAdapter` pattern | Piece 1 | — | NEW | isolates all model-specific knowledge |
+| Family registry / `ModelAdapter` pattern | Piece 1 | — | NEW | isolates all model-specific knowledge; registry dispatches on `config.model.family` (stable tag), not the HF id `config.model.name` |
 | Difference-in-means refusal direction | Piece 2 | — | NEW | the interpretability heart; raw resid, layer sweep |
 | Projection scalar as a signal | Piece 2 | — | NEW → REPEAT (reused Piece 5) | bimodal histogram is the sanity check |
 | Refusal as a 2–5D concept cone (`RefusalSubspace`) | Principle 2 (this session) | — | NEW for subspace mode (Phase 2) | 1-D now, basis-shaped type from day one |
