@@ -91,6 +91,7 @@ _DTYPES = {"float32": torch.float32, "bfloat16": torch.bfloat16, "float16": torc
 
 class ModelConfig(BaseModel):
     name: str = "gpt2"                      # HF id understood by the backend
+    family: str = "gpt2"                    # stable family tag for adapter dispatch (e.g. "gemma2"); NOT the HF id
     backend: str = "hooked_transformer"    # see Backend & Convention Policy
     dtype: str = "float32"                  # bf16 for Gemma; gpt2 smoke is fine in fp32
     revision: str = "main"                  # pins reproducibility (goes into the Convention tag)
@@ -225,7 +226,7 @@ class ModelAdapter(ABC):
     def apply_chat_template(self, instruction, system=None) -> str: ...
     def post_instruction_positions(self) -> list[int]: ...     # e.g. [-1, -2, -3, -4, -5]
     def refusal_token_set(self) -> list[int]: ...
-    # registry: adapters/registry.py maps config.model.name -> ModelAdapter subclass
+    # registry: adapters/registry.py maps config.model.family -> ModelAdapter subclass (family is a stable tag like "gemma2"/"gpt2"; config.model.name stays the HF id)
 ```
 
 ---
