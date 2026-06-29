@@ -177,17 +177,37 @@ def test_genetic_loop_runs_and_improves_on_mock():
 @pytest.mark.slow
 @pytest.mark.gpu
 def test_end_to_end_attack_produces_report():
-    # Gemma-2-2B-IT: loop -> top-K -> EnsembleScorer -> AttackResult with BCa CI + a MechanisticReport
-    ...
+    # Gemma-2-2B-IT: loop -> top-K -> EnsembleScorer -> AttackResult with BCa CI + a MechanisticReport.
+    # Phase-1 report = projection trajectory + DLA only. Causal confirmation is Piece 11 / Phase 1.5,
+    # and must NOT be required for Phase-1 done.
+    assert result.asr_ci is not None
+    assert report.projection_trajectory is not None and report.dla is not None
+    assert report.causal_confirmation is None        # Phase 1.5 — explicitly not yet
 ```
 
 ### Piece 9 — the headline ablation
 ```python
+# tests/slow/test_ablation_harness.py
 @pytest.mark.slow
 @pytest.mark.gpu
 def test_ablation_harness_returns_delta_ci():
-    # both arms run at the SAME fixed budget; paired bootstrap returns a delta-ASR CI (sign is the result)
-    ...
+    # paired bootstrap returns a delta-ASR CI across seeds (sign is the result, not asserted)
+    assert result.delta_asr_ci is not None
+
+def test_fitness_and_success_judges_are_disjoint():
+    # the black-box arm's fitness judge must NOT be the success judge (no training on the eval)
+    assert cfg.arms["blackbox"]["fitness_judge"] != cfg.success_judge
+
+def test_both_budget_modes_present():
+    assert {"equal_iterations", "equal_compute"} <= set(cfg.budget_modes)
+
+def test_cost_counters_recorded():
+    # each arm logs target forward-passes and wall-clock; judge-calls tracked separately
+    for arm in ("whitebox", "blackbox"):
+        assert result.cost[arm].target_forward_passes is not None
+        assert result.cost[arm].wallclock_s is not None
+        assert result.cost[arm].judge_calls is not None
+    assert result.cost["whitebox"].judge_calls == 0      # white-box never judges during search
 ```
 
 ---
@@ -202,8 +222,9 @@ These are the tests that protect against *plausible-but-wrong*:
 4. **Calibration gate** (Piece 7): Spearman/precision@K between fitness and judge is adequate *before* trusting
    internal-signal-gated ASR — and a bad `(layer, position)` produces low/negative Spearman (the bridge must catch it).
 5. **Convention invariant** (cross-cutting): loading a `RefusalSubspace` whose `Convention` differs from the run **raises**.
-6. **Causal confirmation** (Piece 11): random/benign-direction controls — a "why it worked" claim must show the *refusal*
-   direction specifically is responsible, since random directions also break safety.
+6. **Causal confirmation** (Piece 11, *Phase 1.5* — **not** part of the Phase-1 gate; items 1–5 are): random/benign-direction
+   controls — a "why it worked" claim must show the *refusal* direction specifically is responsible, since random
+   directions also break safety.
 
 ---
 

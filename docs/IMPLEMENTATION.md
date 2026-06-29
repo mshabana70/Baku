@@ -371,25 +371,93 @@ class GeneticSearch(SearchStrategy):
 
 ---
 
-## Piece 9 — Headline ablation harness (white-box vs black-box fitness)  ·  *REPEAT → interface + hints*
+## Piece 9 — Headline ablation: white-box vs black-box fitness  ·  *REPEAT → interface + hints*
 
-The experiment that substantiates the thesis. Same `GeneticSearch`, swap **only** the `FitnessFn`:
-`RefusalProjectionFitness` (white-box) vs `JudgeFitness` (the ensemble judge used *as the inner-loop fitness*). **Fix the
-query/compute budget** across arms. Metrics: queries-to-first-success, ASR @ fixed budget, per-generation convergence
-curves, wall-clock + query cost. Compare with the **paired bootstrap** (Piece 6).
+**The claim under test.** Using the refusal-projection scalar as search fitness makes the attack *more efficient* than
+using a behavioral judge as fitness. "Efficient" is meaningless until the cost unit is fixed — and the obvious unit
+(candidate evaluations) is rigged, because one white-box eval = one truncated forward to `l*`, while one black-box eval =
+a full generation **plus** a judge call. So this piece is mostly about measuring cost honestly; the search code is
+unchanged from Piece 8.
+
+**Held fixed across both arms (everything but the signal):** same target + revision + seeds; same paired behavior set;
+same operators (crossover, mutation, selection, BLEU-novelty); same population; same DAN seed population; same
+`RefusalSubspace` + calibration. **The only difference is the `FitnessFn`.**
+
+**Don't optimize against the success metric.** The black-box arm uses a judge *as fitness* — if that's the same judge
+that scores ASR, the arm is training on the eval. Split them: the black-box fitness judge is **one** judge (e.g.
+Llama-Guard-3), and the **success metric for both arms is a held-out judge** (e.g. StrongREJECT) that neither arm
+optimizes. White-box never touches a judge during search, so it can't be optimizing the metric — which conservatively
+*handicaps* white-box, the right direction for a credible win.
+
+**Two budget modes — run both; they answer different questions:**
+
+1. **Equal search iterations** (population × steps identical). Isolates *signal quality*: per step, is projection a
+   better compass than the judge? White-box matching/beating ASR here means the signal is at least as good a guide.
+2. **Equal compute** (identical wall-clock on the same GPU, or identical target forward-passes / FLOPs). The
+   deployment-efficiency claim: white-box runs *more* iterations per unit compute because each step is cheaper, so
+   per-step parity compounds into a budget win.
+
+**Cost accounting per arm:**
+
+| Unit | White-box / candidate | Black-box / candidate |
+|---|---|---|
+| target forward passes | 1 truncated (→ `l*`) | generation (prefill + G decode) + 1 fitness-judge forward |
+| judge calls (during search) | 0 | 1 |
+| wall-clock | measured, same HW | measured, same HW |
+
+Report **target-FLOPs and wall-clock as primary** (the neutral "is it cheaper to run" question) and **judge-calls as
+secondary** — disclosing that judge-calls structurally favor white-box and only count as cost if the judge is your
+bottleneck oracle (paid API / human / large model). Don't dress judge-calls up as a neutral compute measure.
+
+**Measurement cost ≠ deployment cost — keep them separate.** To plot curves you judge *every* candidate with the
+held-out judge; that judging is **instrumentation**, run offline, and is **not** charged to either arm's budget. The
+budget counts only the *search* cost the attack actually incurs in deployment (where white-box judges only top-K). Log
+all candidates + generations to disk and judge post-hoc.
+
+**Metrics (per arm, per seed, then aggregated):**
+- ASR @ fixed budget — computed in *each* mode (equal-iterations and equal-compute).
+- Cost-to-first-success in every denominator: iterations-, FLOPs-, wall-clock-, judge-calls-to-first-success.
+- Per-generation convergence: best/mean fitness + held-out-judge ASR of the population.
+- Compare arms with the **paired bootstrap** (`paired_delta_ci`, Piece 6) on per-behavior success — valid because arms
+  are paired on the same behaviors + seeds.
+
+**Falsifiable on purpose — decide the readings before running:** white-box reaches comparable ASR at far lower compute
+→ efficiency win (the thesis); white-box reaches *higher* ASR at equal iterations → signal-quality win; white-box
+underperforms at equal compute → the projection signal is a worse guide, a real negative result that redirects the work
+(better fitness signals, or subspace mode). Writing these down in advance is what keeps it from being back-rationalized.
 
 ```yaml
-# configs/experiments/whitebox_vs_blackbox.yaml  (reference)
+# configs/experiments/whitebox_vs_blackbox.yaml
 base: configs/local.yaml
-arms:
-  whitebox: { fitness: refusal_projection }
-  blackbox: { fitness: judge }
-budget:   { max_queries: 6400, population: 64, num_steps: 100 }   # identical across arms
-report:   [queries_to_first_success, asr_at_budget, convergence_curve, wallclock, query_cost]
-compare:  paired_bootstrap          # delta-ASR CI between arms
-seeds:    [0, 1, 2]
-```
 
+arms:
+  whitebox: { fitness: refusal_projection }                     # 0 judge calls during search
+  blackbox: { fitness: judge, fitness_judge: llama_guard_3 }    # != success judge
+
+success_judge: strongreject        # held out from both arms' fitness; measures ASR
+
+fixed:                             # identical across arms — only `fitness` differs
+  operators: [multi_point_crossover, wordlevel_mutation, bleu_novelty]
+  population: 64
+  seed_population: dan_templates
+  refusal_subspace: cache/gemma2_2b_it.subspace
+
+budget_modes:
+  equal_iterations: { population: 64, num_steps: 100 }          # 6400 candidate evals/arm
+  equal_compute:    { limit: wallclock, minutes: 30 }           # or { limit: target_flops, value: ... }
+
+instrumentation:
+  judge_every_candidate: true      # offline measurement ONLY — not charged to budget
+  log_generations: true
+
+report:
+  metrics: [asr_at_budget, iters_to_first_success, flops_to_first_success,
+            wallclock_to_first_success, judge_calls_to_first_success, convergence_curve]
+  primary_denominators: [target_flops, wallclock]
+  secondary_denominators: [judge_calls]
+  compare: paired_bootstrap
+seeds: [0, 1, 2]
+```
 ---
 
 ## Piece 10 — `Reporter` (basic)  ·  *NEW*
