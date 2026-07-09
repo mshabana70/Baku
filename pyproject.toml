@@ -1,0 +1,15 @@
+[project]
+name = "Baku"
+requires-python = ">=3.11"
+dependencies = [
+    "torch",
+    "transformer-lens>=2",
+    "sae-lens",
+    "transformers", "accelerate", "datasets",
+    "pydantic>=2", "pyyaml",
+    "numpy", "scipy",
+    "nltk",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-xdist", "ruff", "mypy"]
