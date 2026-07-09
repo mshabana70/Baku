@@ -1,5 +1,6 @@
 [project]
 name = "Baku"
+version = "2026.07.09"
 requires-python = ">=3.11"
 dependencies = [
     "torch",
