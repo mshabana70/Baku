@@ -32,7 +32,8 @@ After each piece, when the mentor offers understanding-check questions:
 ### Recall log
 | Date | Concept recalled | At piece | Result (solid / fumbled) | Action taken |
 |---|---|---|---|---|
-| — | _(first spaced recall begins at Piece 1's review; Piece 0 has no prior completed concepts)_ | — | — | — |
+| 2026-07-10 | `stop_at_layer = max_layer+1` — exclusive bound / where `hook_resid_post` fires (Q2) | Piece 0 | **solid** | flipped concept to REPEAT |
+| 2026-07-10 | `names_filter` vs `stop_at_layer` = which *resource* each conserves (memory vs compute) + why both (Q1) | Piece 0 | **fumbled** — described what each var *holds*, not the resource each *saves* | bumped dial toward full-ref; **re-quiz at Piece 5** (truncated-forward fitness) |
 
 ### Per-piece dial overrides (researcher's call, stands until changed)
 - **Pieces 2, 5, 8 → attempt COLD (interface + hints)**, even where the default marks them NEW→full. The researcher chose
@@ -40,9 +41,9 @@ After each piece, when the mentor offers understanding-check questions:
 
 | Concept | First introduced | First built | Dial (next time) | Notes |
 |---|---|---|---|---|
-| Config-driven device/dtype/tier (no hardcoding) | Piece 0 (this session) | — | NEW → REPEAT after review | tier switch = config only, never branch in algo code |
-| Forward hooks & activation capture (TL `run_with_cache`, `names_filter`, `stop_at_layer`) | Piece 0 (this session) | — | NEW → REPEAT after review | the core interp primitive; memory discipline lives here |
-| Memory discipline (detach→CPU, truncated forward, no cache-all) | Piece 0 (this session) | — | NEW → REPEAT after review | the 16GB-tier survival rule |
+| Config-driven device/dtype/tier (no hardcoding) | Piece 0 | **Piece 0 (2026-07-10)** | **REPEAT** | ✅ device fix nailed it: config leads, env only vetoes on hard incompat (Principle 8) |
+| Forward hooks & activation capture (TL `run_with_cache`, `names_filter`, `stop_at_layer`) | Piece 0 | **Piece 0 (2026-07-10)** | **REPEAT — re-quiz at Piece 5** | code correct; on recall the `+1`/exclusive-bound was solid but the *why* (names_filter→memory, stop_at_layer→compute) was fuzzy |
+| Memory discipline (detach→CPU, truncated forward, no cache-all) | Piece 0 | **Piece 0 (2026-07-10)** | **REPEAT — re-quiz at Piece 5** | built correctly, but the memory-vs-compute *articulation* fumbled on recall (2026-07-10) |
 | Raw-activation convention / `from_pretrained_no_processing` | ARCHITECTURE §5 (this session) | — | NEW for first SAE/extraction use | the silent-corruption trap; convention-tag artifacts |
 | Chat templates + post-instruction positions (negative-indexed) | Piece 1 | — | NEW | synthetic template for no-template base models |
 | Family registry / `ModelAdapter` pattern | Piece 1 | — | NEW | isolates all model-specific knowledge; registry dispatches on `config.model.family` (stable tag), not the HF id `config.model.name` |
