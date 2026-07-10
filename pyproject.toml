@@ -1,5 +1,5 @@
 [project]
-name = "Baku"
+name = "baku"
 version = "2026.07.09"
 requires-python = ">=3.11"
 dependencies = [
@@ -12,5 +12,20 @@ dependencies = [
     "nltk",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["pytest", "pytest-xdist", "ruff", "mypy"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/baku"]
+
+[tool.pytest.ini_options]
+markers = [
+    "smoke: fast plumbing tests on GPT-2",
+    "slow: real-model GPU tests, excluded from default CI",
+    "gpu: requires a GPU",
+]
+testpaths = ["tests"]

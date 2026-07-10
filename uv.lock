@@ -273,7 +273,7 @@ wheels = [
 [[package]]
 name = "baku"
 version = "2026.7.9"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
     { name = "datasets" },
@@ -290,7 +290,7 @@ dependencies = [
     { name = "transformers" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "mypy" },
     { name = "pytest" },
@@ -302,21 +302,24 @@ dev = [
 requires-dist = [
     { name = "accelerate" },
     { name = "datasets" },
-    { name = "mypy", marker = "extra == 'dev'" },
     { name = "nltk" },
     { name = "numpy" },
     { name = "pydantic", specifier = ">=2" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-xdist", marker = "extra == 'dev'" },
     { name = "pyyaml" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "sae-lens" },
     { name = "scipy" },
     { name = "torch" },
     { name = "transformer-lens", specifier = ">=2" },
     { name = "transformers" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-xdist" },
+    { name = "ruff" },
+]
 
 [[package]]
 name = "beartype"
