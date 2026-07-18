@@ -25,4 +25,8 @@ class ModelAdapter(ABC):
         Empty for non-safety-tuned models.
         """
 
+    @abstractmethod
+    def attn_implementation(self) -> str:
+        return "sdpa" # a trustworthy default
+        # families with softcap override + forbid FA2 (since it is hardware specific to CUDA)
     
