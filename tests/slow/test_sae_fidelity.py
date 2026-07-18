@@ -1,3 +1,5 @@
+import pytest
+
 # tests/slow/test_sae_fidelity.py — reconstruction must match published metrics, else SAE untrusted
 @pytest.mark.slow
 @pytest.mark.gpu

@@ -7,7 +7,9 @@ class GemmaAdapter(ModelAdapter):
 
     def build_prompt(self, instructions: str) -> str:
         # trailing model header, refusal usually decides here
-        return ("<start_of_turn>user\n", f"{instructions}<end_of_turn>\n", "<start_of_turn>model\n")
+        return ("<start_of_turn>user\n"
+                f"{instructions}<end_of_turn>\n"
+                "<start_of_turn>model\n")
     
     def post_instruction_positions(self) -> list[int]:
         return [-5, -4, -3, -2, -1] # last few tokens for model-turn header

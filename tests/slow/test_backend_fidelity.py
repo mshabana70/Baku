@@ -1,3 +1,5 @@
+import pytest
+
 @pytest.mark.slow
 @pytest.mark.gpu
 def test_tl_logits_match_hf(per_backend_tol):
