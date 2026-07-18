@@ -23,4 +23,5 @@ def test_synthetic_template_runs_on_gpt2(adapter):
     assert "PLACEHOLDER_INSTRUCTION" in out
 
 def test_adapter_forbids_fa2_on_gemma():
-    assert GemmaAdapter().attn_implementation != "FA2"
+    with pytest.raises(ValueError):
+        GemmaAdapter().assert_attn_compatible("flash_attention_2")

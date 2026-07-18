@@ -3,6 +3,14 @@ from abc import ABC, abstractmethod
 
 class ModelAdapter(ABC):
     family: str # class attr => dispatch tag ("gemma2", "gpt2")
+    allowed_attn: frozenset[str] = frozenset({"eager", "sdpa", "flash_attention_2"})
+
+    def assert_attn_compatible(self, requested: str) -> None:
+        if requested not in self.allowed_attn:
+            raise ValueError(
+                f"{self.family}: attn_implementation={requested!r} forbidden "
+                f"(allowed={sorted(self.allowed_attn)}); FA2 drops Gemma-2's soft-cap -> wrong activations"
+            )
 
     @abstractmethod
     def build_prompt(self, instructions: str) -> str:

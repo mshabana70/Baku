@@ -4,6 +4,7 @@ from .registry import register
 @register
 class GemmaAdapter(ModelAdapter):
     family = "gemma2"
+    allowed_attn = frozenset({"eager", "sdpa"})
 
     def build_prompt(self, instructions: str) -> str:
         # trailing model header, refusal usually decides here
