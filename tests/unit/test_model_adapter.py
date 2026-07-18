@@ -25,3 +25,6 @@ def test_synthetic_template_runs_on_gpt2(adapter):
 def test_adapter_forbids_fa2_on_gemma():
     with pytest.raises(ValueError):
         GemmaAdapter().assert_attn_compatible("flash_attention_2")
+
+def test_adapter_accepts_valid_atten_on_gemma():
+    assert GemmaAdapter().assert_attn_compatible("sdpa") is not ValueError

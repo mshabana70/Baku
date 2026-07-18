@@ -36,5 +36,5 @@ class ModelAdapter(ABC):
     @property
     def attn_implementation(self) -> str:
         return "sdpa" # a trustworthy default
-        # families with softcap override + forbid FA2 (since it is hardware specific to CUDA)
+        # families with softcap override + forbid FA2
     
